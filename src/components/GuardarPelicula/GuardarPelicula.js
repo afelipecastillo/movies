@@ -13,6 +13,7 @@ function GuardarPelicula() {
     if (idPelicula) {
       url = url + "/" + idPelicula;
     }
+    delete pelicula._id;
     return fetch(url, {
       method: idPelicula ? "PUT" : "POST",
       headers: {
