@@ -5,40 +5,48 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import React, { useReducer, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
-// async function guardarPelicula(pelicula, id) {
-//   let url = 'http://localhost:8080/guardar-pelicula';
-//   if (id) {
-//     url = url + '/' + id;
-//   }
-//   return fetch(url, {
-//     method: id? 'PUT' : 'POST',
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(pelicula)
-//   }).then(response => response.json())
-// }
-
-const formReducer = (state, data) => {
-  if (data.isEvent) {
-    return {
-      ...state,
-      [data.name]: data.value,
-    };
-  }
-  return {
-    ...data,
-  };
-};
+import configData from "../../config.json";
 
 function GuardarPelicula() {
+  const guardarPelicula = async (pelicula, idPelicula) => {
+    let url = `${configData.SERVER_URL}/movies`;
+    if (idPelicula) {
+      url = url + "/" + idPelicula;
+    }
+    return fetch(url, {
+      method: idPelicula ? "PUT" : "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(pelicula),
+    }).then((response) => response.json());
+  };
+
+  const formReducer = (state, data) => {
+    if (data.isEvent) {
+      return {
+        ...state,
+        [data.name]: data.value,
+      };
+    }
+    return {
+      ...data,
+    };
+  };
+
   const { id } = useParams();
-  const [formData, setFormData] = useReducer(formReducer, {});
+  const [formData, setFormData] = useReducer(formReducer, {
+    titulo: "",
+    sinopsis: "",
+    director: "",
+    calificacion: "",
+    imagen: "",
+    actores: "",
+  });
 
   useEffect(() => {
     if (id) {
-      fetch(`http://localhost:3000/json/${id}.json`)
+      fetch(`${configData.SERVER_URL}/movies/${id}`)
         .then((response) => response.json())
         .then((data) => setFormData(data));
     }
@@ -56,9 +64,20 @@ function GuardarPelicula() {
     event.preventDefault();
     console.log(formData);
 
-    // guardarPelicula(formData, id).then(() => {
-    //   // la pelicula se guardó exitosamente
-    // });
+    guardarPelicula(formData, id).then(() => {
+      console.log("la pelicula se guardó exitosamente");
+      console.log(id);
+      if (!id) {
+        setFormData({
+          titulo: "",
+          sinopsis: "",
+          director: "",
+          calificacion: "",
+          imagen: "",
+          actores: "",
+        });
+      }
+    });
   };
 
   return (

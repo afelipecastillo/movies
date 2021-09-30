@@ -1,6 +1,7 @@
 import "./Pelicula.css";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import configData from "../../config.json";
 
 function Pelicula() {
   const { id } = useParams();
@@ -8,7 +9,7 @@ function Pelicula() {
   const [pelicula, setPelicula] = useState(undefined);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/json/${id}.json`)
+    fetch(`${configData.SERVER_URL}/movies/${id}`)
       .then((response) => response.json())
       .then((data) => setPelicula(data));
   }, [id]);
@@ -37,7 +38,7 @@ function Pelicula() {
             <span className="label">Actores:</span>
           </p>
           <ul>
-            {pelicula.actores.map((actor) => {
+            {pelicula.actores.split(",").map((actor) => {
               return (
                 <li key={actor}>
                   <a href="/">{actor}</a>

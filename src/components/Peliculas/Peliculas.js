@@ -2,32 +2,38 @@ import "./Peliculas.css";
 import { useState, useEffect, useContext } from "react";
 import { Link, useHistory } from "react-router-dom";
 import { UserContext } from "../../contexts/UserContext";
-
-async function eliminarPelicula(id) {
-  return fetch(`http://localhost:8080/eliminar-pelicula/${id}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((response) => response.json())
-    .then(() => {
-      // la pelicula se eliminó exitosamente
-      // refrescar el componente de peliculas
-      // de lista de pelidulas eliminar el elemento
-      // volver a consumir el servicio de consulta de peliculas
-    });
-}
+import configData from "../../config.json";
 
 function Peliculas() {
   const [peliculas, setPeliculas] = useState([]);
   const { user } = useContext(UserContext);
   const history = useHistory();
 
-  useEffect(() => {
-    fetch("http://localhost:3000/json/peliculas.json")
+  const cargarPeliculas = async () => {
+    fetch(`${configData.SERVER_URL}/movies`)
       .then((response) => response.json())
       .then((data) => setPeliculas(data));
+  };
+
+  const eliminarPelicula = async (id) => {
+    return fetch(`${configData.SERVER_URL}/movies/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then(() => {
+        // la pelicula se eliminó exitosamente
+        // refrescar el componente de peliculas
+        // de lista de pelidulas eliminar el elemento
+        // volver a consumir el servicio de consulta de peliculas
+        cargarPeliculas();
+      });
+  };
+
+  useEffect(() => {
+    cargarPeliculas();
   }, []);
 
   return (
@@ -44,14 +50,14 @@ function Peliculas() {
             title="Crear pelicula"
             onClick={() => history.push("/guardar-pelicula")}
           >
-            <i class="fas fa-plus-circle"></i>
+            <i className="fas fa-plus-circle"></i>
           </button>
         ) : null}
       </div>
       <div className="grid">
         {peliculas.map((pelicula) => {
           return (
-            <div className="pelicula" key={pelicula.id}>
+            <div className="pelicula" key={pelicula._id.$oid}>
               {user.isLoggedIn ? (
                 <ul className="acciones">
                   <li>
@@ -59,19 +65,19 @@ function Peliculas() {
                       className="boton-icono editar"
                       title="Editar pelicula"
                       onClick={() =>
-                        history.push(`/guardar-pelicula/${pelicula.id}`)
+                        history.push(`/guardar-pelicula/${pelicula._id.$oid}`)
                       }
                     >
-                      <i class="fas fa-pen-square"></i>
+                      <i className="fas fa-pen-square"></i>
                     </button>
                   </li>
                   <li>
                     <button
                       className="boton-icono eliminar"
                       title="Eliminar pelicula"
-                      onClick={() => eliminarPelicula(pelicula.id)}
+                      onClick={() => eliminarPelicula(pelicula._id.$oid)}
                     >
-                      <i class="fas fa-minus-circle"></i>
+                      <i className="fas fa-minus-circle"></i>
                     </button>
                   </li>
                 </ul>
@@ -86,7 +92,10 @@ function Peliculas() {
                   <i className="fas fa-star"></i> {pelicula.calificacion}
                 </p>
                 <p className="titulo">{pelicula.titulo}</p>
-                <Link to={`/pelicula/${pelicula.id}`} className="boton-link">
+                <Link
+                  to={`/pelicula/${pelicula._id.$oid}`}
+                  className="boton-link"
+                >
                   Ver más
                 </Link>
               </div>
